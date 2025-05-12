@@ -1,15 +1,26 @@
-FROM node:12-alpine
+# Use Node 18 LTS (or Node 20) as the base image
+FROM node:18-alpine
 
-WORKDIR /opt/app
+# Set working directory
+WORKDIR /app
 
-ENV NODE_ENV production
+# Copy package manifests first for efficient caching
+COPY package.json package-lock.json ./
 
-COPY package*.json ./
+# Install dependencies (using lockfile)
+RUN npm ci && npm cache clean --force
 
-RUN npm ci 
+# Copy the rest of the application code
+COPY . . 
 
-COPY . /opt/app
+# Build the Next.js app for production
+RUN npm run build
 
-RUN npm install --dev && npm run build
+# Set environment to production (Next.js uses this for optimizations)
+ENV NODE_ENV=production
 
-CMD [ "npm", "start" ]
+# Expose the port that Next.js listens on (defaults to 3000)
+EXPOSE 3000
+
+# Start the Next.js server
+CMD ["npm", "start"]
