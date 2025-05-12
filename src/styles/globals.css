@@ -2,30 +2,110 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body {
-  padding: 0;
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-  background-image: radial-gradient(
-    circle farthest-side at 50% 100%,rgba(1, 9, 18, 0),
-    rgba(1, 6, 14, 0.6) 36%,
-    rgba(1, 14, 29, 0.6) 55%,
-    rgba(49, 18, 93, 0.4));
+/* === Theme Variables: LIGHT THEME === */
+:root {
+  --primary: #805ad5;
+  --accent: #d53f8c;
+  --primary-dark: #6b46c1;
+  --accent-dark: #b83280;
+
+  --body-bg: #f9fafb;           /* light background */
+  --card-bg: #ffffff;           /* white cards */
+  --card-border: #e2e8f0;       /* soft border */
+  --input-bg: #f7fafc;          /* subtle input field */
+  --console-bg: #edf2f7;        /* light console box */
+
+  --text-main: #1a202c;         /* near-black */
+  --text-muted: #718096;        /* gray text */
+
+  --error: #e53e3e;
+  --overlay: rgba(255, 255, 255, 0.6);
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+/* === Base Styles === */
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background-color: var(--body-bg);
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-black font-bold mb-2;
+  }
+
+  p {
+    @apply text-sm leading-relaxed text-[var(--text-muted)];
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  input, textarea, select {
+    @apply w-full px-4 py-2 rounded-lg text-sm border;
+    background-color: var(--input-bg);
+    border-color: var(--card-border);
+    color: var(--text-main);
+  }
+
+  input::placeholder {
+    color: var(--text-muted);
+  }
+
+  input:-webkit-autofill {
+    box-shadow: 0 0 0 1000px var(--input-bg) inset !important;
+    -webkit-text-fill-color: var(--text-main) !important;
+  }
 }
 
-* {
-  box-sizing: border-box;
+/* === Component Classes === */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-6 py-2 rounded-2xl font-semibold bg-gradient-to-br from-purple-600 to-fuchsia-600 text-white shadow-md hover:shadow-xl transition-all;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 hover:bg-gray-300;
+  }
+
+  .card {
+    @apply bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-6 shadow-md;
+  }
+
+  .input {
+    @apply bg-[var(--input-bg)] border border-[var(--card-border)] text-gray-800 rounded-lg px-4 py-2;
+  }
+
+  .tag {
+    @apply inline-block bg-gray-100 text-xs text-gray-800 px-2 py-1 rounded;
+  }
 }
 
-/* example: override wallet button style */
-.wallet-adapter-button:not([disabled]):hover {
-  background-color: #707070;
-}
+/* === Utility Extensions === */
+@layer utilities {
+  .text-glow {
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+  }
 
+  .bg-overlay {
+    background-color: var(--overlay);
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+  }
+}

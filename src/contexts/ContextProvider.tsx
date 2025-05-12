@@ -1,7 +1,11 @@
 import { WalletAdapterNetwork, WalletError } from '@solana/wallet-adapter-base';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import {
-    UnsafeBurnerWalletAdapter
+    PhantomWalletAdapter,
+    SolflareWalletAdapter,
+    TorusWalletAdapter,
+    LedgerWalletAdapter,
+    CloverWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
 import { Cluster, clusterApiUrl } from '@solana/web3.js';
 import { FC, ReactNode, useCallback, useMemo } from 'react';
@@ -22,43 +26,45 @@ const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const network = networkConfiguration as WalletAdapterNetwork;
     const endpoint = useMemo(() => clusterApiUrl(network), [network]);
 
-    console.log(network);
-
     const wallets = useMemo(
         () => [
-            new UnsafeBurnerWalletAdapter(),
+            new PhantomWalletAdapter(),
+            new SolflareWalletAdapter({ network }),
+            new TorusWalletAdapter(),
+            new LedgerWalletAdapter(),
+            new CloverWalletAdapter(),
         ],
         [network]
     );
 
     const onError = useCallback(
         (error: WalletError) => {
-            notify({ type: 'error', message: error.message ? `${error.name}: ${error.message}` : error.name });
+            notify({
+                type: 'error',
+                message: error.message ? `${error.name}: ${error.message}` : error.name
+            });
             console.error(error);
         },
         []
     );
 
     return (
-        // TODO: updates needed for updating and referencing endpoint: wallet adapter rework
         <ConnectionProvider endpoint={endpoint}>
             <WalletProvider wallets={wallets} onError={onError} autoConnect={autoConnect}>
                 <ReactUIWalletModalProviderDynamic>
                     {children}
                 </ReactUIWalletModalProviderDynamic>
-			</WalletProvider>
+            </WalletProvider>
         </ConnectionProvider>
     );
 };
 
 export const ContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
     return (
-        <>
-            <NetworkConfigurationProvider>
-                <AutoConnectProvider>
-                    <WalletContextProvider>{children}</WalletContextProvider>
-                </AutoConnectProvider>
-            </NetworkConfigurationProvider>
-        </>
+        <NetworkConfigurationProvider>
+            <AutoConnectProvider>
+                <WalletContextProvider>{children}</WalletContextProvider>
+            </AutoConnectProvider>
+        </NetworkConfigurationProvider>
     );
 };

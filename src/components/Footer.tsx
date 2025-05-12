@@ -66,18 +66,7 @@ export const Footer: FC = () => {
                                 <Link href="https://solana.com" target="_blank" rel="noopener noreferrer" passHref className="text-secondary hover:text-white">
                                     Labs
                                 </Link>
-                                <Link href="https://solana.org" target="_blank" rel="noopener noreferrer" passHref className="text-secondary hover:text-white">
-                                    Foundation
-                                </Link>
-                                <Link href="https://solanamobile.com/" target="_blank" rel="noopener noreferrer" passHref className="text-secondary hover:text-white">
-                                    Solana Mobile
-                                </Link>
-                                <Link href="https://solanapay.com/" target="_blank" rel="noopener noreferrer" passHref className="text-secondary hover:text-white">
-                                    Solana Pay
-                                </Link>
-                                <Link href="https://solana.org/grants" target="_blank" rel="noopener noreferrer" passHref className="text-secondary hover:text-white">
-                                    Grants
-                                </Link>
+                              
                             </div>
                         </div>
 
@@ -88,18 +77,7 @@ export const Footer: FC = () => {
                                 <Link href="https://docs.solana.com/developers" target="_blank" rel="noopener noreferrer" passHref className="text-secondary hover:text-white">
                                     Documentation
                                 </Link>
-                                <Link href="https://github.com/solana-mobile/solana-mobile-stack-sdk" target="_blank" rel="noopener noreferrer" passHref className="text-secondary hover:text-white">
-                                    Mobile SDK
-                                </Link>
-                                <Link href="https://github.com/solana-labs/solana-pay" target="_blank" rel="noopener noreferrer" passHref className="text-secondary hover:text-white">
-                                    Pay SDK
-                                </Link>
-                                <Link href="https://solanacookbook.com/" target="_blank" rel="noopener noreferrer" passHref className="text-secondary hover:text-white">
-                                    Cookbook
-                                </Link>
-                                <Link href="https://solana.com/developers/dao" target="_blank" rel="noopener noreferrer" passHref className="text-secondary hover:text-white">
-                                    DAOs
-                                </Link>
+                                
                             </div>
                         </div>
 
@@ -110,18 +88,7 @@ export const Footer: FC = () => {
                                 <Link href="https://solana.com/news" target="_blank" rel="noopener noreferrer" passHref className="text-secondary hover:text-white">
                                     News
                                 </Link>
-                                <Link href="https://solana.org/validators" target="_blank" rel="noopener noreferrer" passHref className="text-secondary hover:text-white">
-                                    Validators
-                                </Link>
-                                <Link href="https://www.youtube.com/@SolanaFndn" target="_blank" rel="noopener noreferrer" passHref className="text-secondary hover:text-white">
-                                    Youtube
-                                </Link>
-                                <Link href="https://app.realms.today/discover" target="_blank" rel="noopener noreferrer" passHref className="text-secondary hover:text-white">
-                                    Realms
-                                </Link>
-                                <Link href="https://www.solanau.org" target="_blank" rel="noopener noreferrer" passHref className="text-secondary hover:text-white">
-                                    Solana U
-                                </Link>
+                                
                             </div>
                         </div>
                     </div>

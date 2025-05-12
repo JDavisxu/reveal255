@@ -1,58 +1,117 @@
+const plugin = require('tailwindcss/plugin');
+
 module.exports = {
   mode: "jit",
-  content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  content: [
+    "./pages/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
+    "./contexts/**/*.{js,ts,jsx,tsx}",
+    "./app/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,ts,jsx,tsx}",
+
+    // Ensure wallet-adapter UI classes aren't purged
+    "./node_modules/@solana/wallet-adapter-react-ui/**/*.js",
+  ],
+  safelist: [
+    // Wallet Adapter classes that are injected at runtime
+    'wallet-adapter-button',
+    'wallet-adapter-button-start-icon',
+    'wallet-adapter-dropdown',
+    'wallet-adapter-dropdown-list',
+    'wallet-adapter-dropdown-item',
+    'wallet-adapter-dropdown-item-detail',
+  ],
   darkMode: "media",
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        glass: "rgba(255, 255, 255, 0.05)",
+        teal: { 400: "#00BFA6" },
+        gray: { 900: "#111827", 800: "#1F2937", 300: "#D1D5DB" },
+        slate: { 50: "#F5F7FA" },
+      },
+      borderRadius: {
+        xl: "1.25rem",
+      },
+      boxShadow: {
+        glass: "0 0 30px rgba(0, 0, 0, 0.6)",
+      },
+      backdropBlur: {
+        xs: "10px",
+        sm: "20px",
+      },
+      spacing: {
+        6: "1.5rem",
+      },
+    },
   },
   plugins: [
     require('daisyui'),
-    require("@tailwindcss/typography")
+    require('@tailwindcss/typography'),
+
+    // Custom glassmorphic components
+    plugin(function ({ addComponents, theme }) {
+      addComponents({
+        ".glass-card": {
+          backgroundColor: theme("colors.glass"),
+          border: `1px solid rgba(255,255,255,0.15)`,
+          backdropFilter: `blur(${theme("backdropBlur.sm")})`,
+          borderRadius: theme("borderRadius.xl"),
+          padding: theme("spacing.6"),
+          boxShadow: theme("boxShadow.glass"),
+        },
+        ".glass-btn": {
+          backgroundColor: theme("colors.glass"),
+          border: `1px solid rgba(255,255,255,0.1)`,
+          backdropFilter: `blur(${theme("backdropBlur.xs")})`,
+          borderRadius: theme("borderRadius.lg"),
+          padding: `${theme("spacing.3")} ${theme("spacing.4")}`,
+          fontWeight: theme("fontWeight.medium"),
+          transition: `background-color ${theme("transitionDuration.200")} ease`,
+        },
+      });
+    }),
   ],
   daisyui: {
     styled: true,
-    // TODO: Theme needs works
     themes: [
       {
-        'solana': { 
+        customglass: {
           fontFamily: {
-            display: ['PT Mono, monospace'],
-            body: ['Inter, sans-serif'],
+            display: ["PT Mono, monospace"],
+            body: ["Inter, sans-serif"],
           },
-          'primary': '#000000',           /* Primary color */
-          'primary-focus': '#9945FF',     /* Primary color - focused */
-          'primary-content': '#ffffff',   /* Foreground content color to use on primary color */
+          primary: "#00BFA6",
+          "primary-focus": "#009e8f",
+          "primary-content": "#ffffff",
 
-          'secondary': '#808080',         /* Secondary color */
-          'secondary-focus': '#f3cc30',   /* Secondary color - focused */
-          'secondary-content': '#ffffff', /* Foreground content color to use on secondary color */
+          secondary: "#6B7280",
+          "secondary-focus": "#4B5563",
+          "secondary-content": "#ffffff",
 
-          'accent': '#33a382',            /* Accent color */
-          'accent-focus': '#2aa79b',      /* Accent color - focused */
-          'accent-content': '#ffffff',    /* Foreground content color to use on accent color */
+          accent: "#F5F7FA",
+          "accent-focus": "#E5E7EB",
+          "accent-content": "#111827",
 
-          'neutral': '#2b2b2b',           /* Neutral color */
-          'neutral-focus': '#2a2e37',     /* Neutral color - focused */
-          'neutral-content': '#ffffff',   /* Foreground content color to use on neutral color */
+          neutral: "#1F2937",
+          "neutral-focus": "#111827",
+          "neutral-content": "#D1D5DB",
 
-          'base-100': '#000000',          /* Base color of page, used for blank backgrounds */
-          'base-200': '#35363a',          /* Base color, a little darker */
-          'base-300': '#222222',          /* Base color, even more darker */
-          'base-content': '#f9fafb',      /* Foreground content color to use on base color */
+          "base-100": "#0B0B0B",
+          "base-200": "#111827",
+          "base-300": "#1F2937",
+          "base-content": "#D1D5DB",
 
-          'info': '#2094f3',              /* Info */
-          'success': '#009485',           /* Success */
-          'warning': '#ff9900',           /* Warning */
-          'error': '#ff5724',             /* Error */
+          info: "#3ABFF8",
+          success: "#00BFA6",
+          warning: "#FACC15",
+          error: "#F87171",
         },
       },
-      // backup themes:
-      // 'dark',
-      // 'synthwave'
     ],
     base: true,
     utils: true,
     logs: true,
     rtl: false,
   },
-}
+};
