@@ -1,7 +1,12 @@
 FROM node:20-alpine
 
-# Add Python and build tools
-RUN apk add --no-cache python3 make g++ && ln -sf python3 /usr/bin/python
+# ✅ Install necessary build tools, Python, and Linux headers
+RUN apk add --no-cache \
+  python3 \
+  make \
+  g++ \
+  linux-headers \
+  && ln -sf python3 /usr/bin/python
 
 WORKDIR /app
 
