@@ -3,11 +3,12 @@ import {
   CheckCircleIcon,
   InformationCircleIcon,
   XCircleIcon,
-} from "@heroicons/react/outline";
-import { XIcon } from "@heroicons/react/solid";
+  XMarkIcon,
+} from "@heroicons/react";
 import useNotificationStore from "../stores/useNotificationStore";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { useNetworkConfiguration } from "contexts/NetworkConfigurationProvider";
+
 
 const NotificationList = () => {
   const notifications = useNotificationStore((s) => s.notifications);
@@ -88,7 +89,7 @@ const Notification = ({ type, message, description, txid, onHide }) => {
             onClick={onHide}
             className="text-gray-400 hover:text-white transition"
           >
-            <XIcon className="h-5 w-5" />
+            <XMarkIcon className="h-5 w-5" />
           </button>
         </div>
       </div>
