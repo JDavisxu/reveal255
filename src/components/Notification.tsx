@@ -4,11 +4,10 @@ import {
   InformationCircleIcon,
   XCircleIcon,
   XMarkIcon,
-} from "@heroicons/react";
+} from "@heroicons/react/24/outline";
 import useNotificationStore from "../stores/useNotificationStore";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { useNetworkConfiguration } from "contexts/NetworkConfigurationProvider";
-
 
 const NotificationList = () => {
   const notifications = useNotificationStore((s) => s.notifications);
@@ -18,7 +17,6 @@ const NotificationList = () => {
 
   return (
     <div className="z-50 fixed bottom-5 left-1/2 transform -translate-x-1/2 flex flex-col items-center space-y-3 pointer-events-none">
-
       {reversed.map((n, idx) => (
         <Notification
           key={`${n.message}${idx}`}
@@ -33,7 +31,6 @@ const NotificationList = () => {
               ),
             }));
           }}
-          
         />
       ))}
     </div>
@@ -64,7 +61,9 @@ const Notification = ({ type, message, description, txid, onHide }) => {
           {type === "info" && (
             <InformationCircleIcon className="h-6 w-6 text-blue-400" />
           )}
-          {type === "error" && <XCircleIcon className="h-6 w-6 text-red-400" />}
+          {type === "error" && (
+            <XCircleIcon className="h-6 w-6 text-red-400" />
+          )}
         </div>
 
         <div className="ml-3 flex-1">
