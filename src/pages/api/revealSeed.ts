@@ -1,6 +1,7 @@
 // src/pages/api/revealSeed.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
+import { Buffer } from "buffer";
 
 type Data = {
   serverSeed?: number[];
@@ -13,27 +14,23 @@ export default async function handler(
 ) {
   // Log environment to verify DATABASE_URL
   console.log(
-    '🛢 revealSeed ENV:',
-    'NODE_ENV=' + process.env.NODE_ENV,
-    'DATABASE_URL=' + (process.env.DATABASE_URL ? `${process.env.DATABASE_URL.slice(0,30)}…` : 'undefined')
+    "🛢 revealSeed ENV:",
+    "NODE_ENV=" + process.env.NODE_ENV,
+    "DATABASE_URL=" +
+      (process.env.DATABASE_URL
+        ? `${process.env.DATABASE_URL.slice(0, 30)}…`
+        : "undefined")
   );
 
   // CORS preflight handling
   res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "POST, OPTIONS"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type"
-  );
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
-
   if (req.method !== "POST") {
     res.setHeader("Allow", ["POST", "OPTIONS"]);
     return res.status(405).json({ error: "Method not allowed" });
@@ -49,7 +46,6 @@ export default async function handler(
       where: { userPubkey: playerPublicKey, revealed: false },
       orderBy: { createdAt: "desc" },
     });
-
     if (!session) {
       return res.status(404).json({ error: "Server seed not found" });
     }
@@ -66,6 +62,7 @@ export default async function handler(
       });
     }
 
+    // Return the raw seed back to the client
     return res.status(200).json({ serverSeed: Array.from(seedBuf) });
   } catch (err) {
     console.error("❌ revealSeed API error:", err);

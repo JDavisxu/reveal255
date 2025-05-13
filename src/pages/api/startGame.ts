@@ -2,6 +2,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
 import { keccak_256 } from "js-sha3";
+import { Buffer } from "buffer";  // ← make sure to import Buffer
 
 type Data = {
   commitment?: string;
@@ -14,27 +15,23 @@ export default async function handler(
 ) {
   // Log environment to verify DATABASE_URL
   console.log(
-    '🛢 startGame ENV:',
-    'NODE_ENV=' + process.env.NODE_ENV,
-    'DATABASE_URL=' + (process.env.DATABASE_URL ? `${process.env.DATABASE_URL.slice(0,30)}…` : 'undefined')
+    "🛢 startGame ENV:",
+    "NODE_ENV=" + process.env.NODE_ENV,
+    "DATABASE_URL=" +
+      (process.env.DATABASE_URL
+        ? `${process.env.DATABASE_URL.slice(0, 30)}…`
+        : "undefined")
   );
 
   // CORS preflight handling
   res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "POST, OPTIONS"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type"
-  );
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
-
   if (req.method !== "POST") {
     res.setHeader("Allow", ["POST", "OPTIONS"]);
     return res.status(405).json({ error: "Method not allowed" });

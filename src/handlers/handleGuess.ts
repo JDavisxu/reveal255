@@ -27,18 +27,26 @@ const handleGuess = async ({
 }): Promise<HandleGuessResult> => {
   const { addLog } = useConsoleStore.getState();
 
-  if (!wallet?.publicKey) return { success: false, error: "Wallet not connected" };
-  if (!program) return { success: false, error: "Program not loaded" };
-  if (guess < 0 || guess > 255) return { success: false, error: "Invalid guess" };
+  if (!wallet?.publicKey) {
+    return { success: false, error: "Wallet not connected" };
+  }
+  if (!program) {
+    return { success: false, error: "Program not loaded" };
+  }
+  if (guess < 0 || guess > 255) {
+    return { success: false, error: "Invalid guess" };
+  }
 
   const playerPubkey = wallet.publicKey.toBase58();
   addLog(`🎮 Starting guess for ${playerPubkey}`);
 
+  // Generate a random server seed
   const seed = crypto.getRandomValues(new Uint8Array(32));
   let commitmentBuf: Buffer;
 
   try {
-    const resp = await request("/api/startGame", {
+    // `request` already parses JSON and returns the body object
+    const { commitment: b64 } = await request<{ commitment: string }>("/api/startGame", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -47,7 +55,6 @@ const handleGuess = async ({
       }),
     });
 
-    const { commitment: b64 } = await resp.json();
     commitmentBuf = Buffer.from(b64, "base64");
   } catch (err: any) {
     const msg = err.message || "Failed to store seed";
@@ -56,8 +63,15 @@ const handleGuess = async ({
     return { success: false, error: msg };
   }
 
-  const [vaultPda] = await PublicKey.findProgramAddress([Buffer.from("vault")], program.programId);
-  const [vaultAccPda] = await PublicKey.findProgramAddress([Buffer.from("vault_account")], program.programId);
+  // Derive PDAs
+  const [vaultPda] = await PublicKey.findProgramAddress(
+    [Buffer.from("vault")],
+    program.programId
+  );
+  const [vaultAccPda] = await PublicKey.findProgramAddress(
+    [Buffer.from("vault_account")],
+    program.programId
+  );
   const [sessionPda] = await PublicKey.findProgramAddress(
     [Buffer.from("session"), wallet.publicKey.toBuffer()],
     program.programId
