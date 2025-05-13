@@ -1,8 +1,6 @@
 import { WalletAdapterNetwork, WalletError } from '@solana/wallet-adapter-base';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import {
-  PhantomWalletAdapter,
-  SolflareWalletAdapter,
   TorusWalletAdapter,
   LedgerWalletAdapter,
   CloverWalletAdapter,
@@ -26,11 +24,9 @@ const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const network = networkConfiguration as WalletAdapterNetwork;
   const endpoint = useMemo(() => clusterApiUrl(network), [network]);
 
-  // Manually instantiate wallet adapters
+  // Only non-standard wallets; Phantom and Solflare follow the Wallet Standard automatically
   const wallets = useMemo(
     () => [
-      new PhantomWalletAdapter(),
-      new SolflareWalletAdapter({ network }),
       new TorusWalletAdapter(),
       new LedgerWalletAdapter(),
       new CloverWalletAdapter(),
