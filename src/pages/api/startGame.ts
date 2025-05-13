@@ -1,4 +1,3 @@
-// pages/api/startGame.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
 import { keccak_256 } from "js-sha3";
@@ -12,7 +11,25 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  // CORS preflight handling
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "POST, OPTIONS"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type"
+  );
+
+  if (req.method === "OPTIONS") {
+    // Preflight end
+    return res.status(200).end();
+  }
+
   if (req.method !== "POST") {
+    res.setHeader("Allow", ["POST", "OPTIONS"]);
     return res.status(405).json({ error: "Method not allowed" });
   }
 
@@ -33,7 +50,10 @@ export default async function handler(
 
     // Hash it for the commitment
     const commitmentHex = keccak_256(seedBuf);
-    const commitmentB64 = Buffer.from(commitmentHex, "hex").toString("base64");
+    const commitmentB64 = Buffer.from(
+      commitmentHex,
+      "hex"
+    ).toString("base64");
 
     // Save to DB
     await prisma.serverSeedSession.create({
