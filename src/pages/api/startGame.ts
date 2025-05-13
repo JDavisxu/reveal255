@@ -1,3 +1,4 @@
+// src/pages/api/startGame.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
 import { keccak_256 } from "js-sha3";
@@ -11,6 +12,13 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  // Log environment to verify DATABASE_URL
+  console.log(
+    '🛢 startGame ENV:',
+    'NODE_ENV=' + process.env.NODE_ENV,
+    'DATABASE_URL=' + (process.env.DATABASE_URL ? `${process.env.DATABASE_URL.slice(0,30)}…` : 'undefined')
+  );
+
   // CORS preflight handling
   res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -24,7 +32,6 @@ export default async function handler(
   );
 
   if (req.method === "OPTIONS") {
-    // Preflight end
     return res.status(200).end();
   }
 
@@ -34,7 +41,6 @@ export default async function handler(
   }
 
   const { playerPublicKey, serverSeed } = req.body;
-
   if (
     typeof playerPublicKey !== "string" ||
     !Array.isArray(serverSeed) ||
@@ -44,18 +50,11 @@ export default async function handler(
   }
 
   try {
-    // Convert to buffer and hex string
     const seedBuf = Buffer.from(serverSeed);
     const seedHex = seedBuf.toString("hex");
-
-    // Hash it for the commitment
     const commitmentHex = keccak_256(seedBuf);
-    const commitmentB64 = Buffer.from(
-      commitmentHex,
-      "hex"
-    ).toString("base64");
+    const commitmentB64 = Buffer.from(commitmentHex, "hex").toString("base64");
 
-    // Save to DB
     await prisma.serverSeedSession.create({
       data: {
         userPubkey: playerPublicKey,

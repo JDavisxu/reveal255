@@ -1,3 +1,4 @@
+// src/pages/api/revealSeed.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
 
@@ -10,7 +11,14 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  // CORS headers
+  // Log environment to verify DATABASE_URL
+  console.log(
+    '🛢 revealSeed ENV:',
+    'NODE_ENV=' + process.env.NODE_ENV,
+    'DATABASE_URL=' + (process.env.DATABASE_URL ? `${process.env.DATABASE_URL.slice(0,30)}…` : 'undefined')
+  );
+
+  // CORS preflight handling
   res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
@@ -22,7 +30,6 @@ export default async function handler(
     "Content-Type"
   );
 
-  // Handle preflight
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
@@ -33,34 +40,25 @@ export default async function handler(
   }
 
   const { playerPublicKey, consume = false } = req.body;
-
   if (typeof playerPublicKey !== "string") {
     return res.status(400).json({ error: "Missing or invalid playerPublicKey" });
   }
 
   try {
-    // 1. Get latest unrevealed session for this user
     const session = await prisma.serverSeedSession.findFirst({
-      where: {
-        userPubkey: playerPublicKey,
-        revealed: false,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
+      where: { userPubkey: playerPublicKey, revealed: false },
+      orderBy: { createdAt: "desc" },
     });
 
     if (!session) {
       return res.status(404).json({ error: "Server seed not found" });
     }
 
-    // 2. Decode the hex string back into buffer
     const seedBuf = Buffer.from(session.serverSeed, "hex");
     if (seedBuf.length !== 32) {
       return res.status(500).json({ error: "Invalid seed in database" });
     }
 
-    // 3. Optionally mark as revealed
     if (consume) {
       await prisma.serverSeedSession.update({
         where: { id: session.id },
