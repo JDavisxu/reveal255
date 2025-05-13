@@ -1,24 +1,59 @@
+// pages/api/revealSeed.ts
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getServerSeed, deleteServerSeed } from "../../seedStore"; // ← two levels up
+import { prisma } from "../../lib/prisma";
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+type Data = {
+  serverSeed?: number[];
+  error?: string;
+};
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<Data>
+) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   const { playerPublicKey, consume = false } = req.body;
+
   if (typeof playerPublicKey !== "string") {
     return res.status(400).json({ error: "Missing or invalid playerPublicKey" });
   }
 
-  const serverSeed = getServerSeed(playerPublicKey);
-  if (!serverSeed || serverSeed.length !== 32) {
-    return res.status(404).json({ error: "Server seed not found or invalid" });
-  }
+  try {
+    // 1. Get latest unrevealed session for this user
+    const session = await prisma.serverSeedSession.findFirst({
+      where: {
+        userPubkey: playerPublicKey,
+        revealed: false,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
-  if (consume) {
-    deleteServerSeed(playerPublicKey);
-  }
+    if (!session) {
+      return res.status(404).json({ error: "Server seed not found" });
+    }
 
-  return res.status(200).json({ serverSeed: Array.from(serverSeed) });
+    // 2. Decode the hex string back into buffer
+    const seedBuf = Buffer.from(session.serverSeed, "hex");
+    if (seedBuf.length !== 32) {
+      return res.status(500).json({ error: "Invalid seed in database" });
+    }
+
+    // 3. Optionally mark as revealed
+    if (consume) {
+      await prisma.serverSeedSession.update({
+        where: { id: session.id },
+        data: { revealed: true },
+      });
+    }
+
+    return res.status(200).json({ serverSeed: Array.from(seedBuf) });
+  } catch (err) {
+    console.error("❌ revealSeed API error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 }
