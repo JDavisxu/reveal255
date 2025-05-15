@@ -76,7 +76,7 @@ export const GameForm: FC<Props> = ({
 
       {/* Disclaimer */}
       <p className="text-[10px] text-center text-[var(--text-muted)] mt-4">
-        Due to Solana's program architecture, you will be asked to confirm two transactions.
+        Due to Solana&rsquo;s program architecture, you will be asked to confirm two transactions.
       </p>
     </div>
   );
