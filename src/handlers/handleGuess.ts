@@ -1,69 +1,43 @@
 // src/handlers/handleGuess.ts
+
 import { PublicKey, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
-import { request } from "../utils/request";
 import { notify } from "../utils/notifications";
 import { useConsoleStore } from "../stores/useConsoleStore";
-import { Buffer } from "buffer";
 
-type HandleGuessResult = {
-  success: boolean;
-  txSig?: string;
-  error?: string;
+export type HandleGuessParams = {
+  guess: number;
+  wagerSOL: number;
+  commitmentBuf: Buffer; // ✅ Now passed in
+  wallet: { publicKey: PublicKey };
+  program: any;
+  connection: any;
 };
 
-const handleGuess = async ({
+export async function handleGuess({
   guess,
   wagerSOL,
+  commitmentBuf,
   wallet,
   program,
   connection,
-}: {
-  guess: number;
-  wagerSOL: number;
-  wallet: any;
-  program: any;
-  connection: any;
-}): Promise<HandleGuessResult> => {
+}: HandleGuessParams): Promise<{ txSig: string }> {
   const { addLog } = useConsoleStore.getState();
 
   if (!wallet?.publicKey) {
-    return { success: false, error: "Wallet not connected" };
+    throw new Error("Wallet not connected");
   }
   if (!program) {
-    return { success: false, error: "Program not loaded" };
+    throw new Error("Program not loaded");
   }
-  if (guess < 0 || guess > 255) {
-    return { success: false, error: "Invalid guess" };
+  if (!Number.isInteger(guess) || guess < 0 || guess > 255) {
+    throw new Error("Invalid guess (must be integer 0–255)");
   }
 
   const playerPubkey = wallet.publicKey.toBase58();
   addLog(`🎮 Starting guess for ${playerPubkey}`);
 
-  // Generate a random server seed
-  const seed = crypto.getRandomValues(new Uint8Array(32));
-  let commitmentBuf: Buffer;
-
-  try {
-    // `request` already parses JSON and returns the body object
-    const { commitment: b64 } = await request<{ commitment: string }>("/api/startGame", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        playerPublicKey: playerPubkey,
-        serverSeed: Array.from(seed),
-      }),
-    });
-
-    commitmentBuf = Buffer.from(b64, "base64");
-  } catch (err: any) {
-    const msg = err.message || "Failed to store seed";
-    notify({ type: "error", message: "Seed commit failed", description: msg });
-    addLog(`❌ Seed commit failed: ${msg}`);
-    return { success: false, error: msg };
-  }
-
-  // Derive PDAs
+  // 1) Derive PDAs
   const [vaultPda] = await PublicKey.findProgramAddress(
     [Buffer.from("vault")],
     program.programId
@@ -77,26 +51,29 @@ const handleGuess = async ({
     program.programId
   );
 
+  // 2) Send guess transaction
   try {
     const lamports = Math.round(wagerSOL * LAMPORTS_PER_SOL);
-    const txSig = await program.methods
+
+    const txSig: string = await program.methods
       .guess(guess, new BN(lamports), [...commitmentBuf])
       .accounts({
+        player: wallet.publicKey,
         vault: vaultPda,
         vaultAccount: vaultAccPda,
         session: sessionPda,
-        player: wallet.publicKey,
         systemProgram: SystemProgram.programId,
       })
-      .rpc();
+      .rpc({
+        skipPreflight: true,
+        preflightCommitment: "processed",
+      });
 
     addLog(`✅ Guess tx: ${txSig}`);
-    return { success: true, txSig };
+    return { txSig };
   } catch (err: any) {
-    const raw = err.message || "Transaction failed";
+    const raw = err.message || "Guess transaction failed";
     addLog(`❌ Guess failed: ${raw}`);
-    return { success: false, error: raw };
+    throw new Error(raw);
   }
-};
-
-export default handleGuess;
+}

@@ -1,4 +1,5 @@
-// src/views/basic.tsx/index.tsx
+// src/views/PlayView.tsx
+
 import { FC } from 'react';
 import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
@@ -8,8 +9,7 @@ export const PlayView: FC = () => {
   const wallet = useAnchorWallet();
 
   return (
-    // add vertical padding to push content away from header/footer
-    <div className="w-full flex items-center justify-center py-20 px-4">
+    <div className="min-h-screen flex items-center justify-center px-4 py-20">
       {!wallet ? (
         <div className="w-full max-w-sm p-6 bg-zinc-900 border border-zinc-700 rounded-2xl shadow-lg">
           <p className="text-white text-lg font-semibold text-center mb-6">

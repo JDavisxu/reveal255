@@ -1,40 +1,37 @@
 // src/handlers/handleReveal.ts
+
 import { PublicKey, SystemProgram } from "@solana/web3.js";
 import { request } from "../utils/request";
 import { notify } from "../utils/notifications";
 import { useConsoleStore } from "../stores/useConsoleStore";
 import { Buffer } from "buffer";
 
-type HandleRevealResult = {
-  success: boolean;
-  txSig?: string;
-  error?: string;
+export type HandleRevealParams = {
+  wallet: { publicKey: PublicKey };
+  program: any;
+  connection: any;
 };
 
-const handleReveal = async ({
+export async function handleReveal({
   wallet,
   program,
   connection,
-}: {
-  wallet: any;
-  program: any;
-  connection: any;
-}): Promise<HandleRevealResult> => {
+}: HandleRevealParams): Promise<{ txSig: string }> {
   const { addLog } = useConsoleStore.getState();
 
   if (!wallet?.publicKey) {
-    return { success: false, error: "Wallet not connected" };
+    throw new Error("Wallet not connected");
   }
   if (!program) {
-    return { success: false, error: "Program not ready" };
+    throw new Error("Program not ready");
   }
 
   const playerPubkey = wallet.publicKey.toBase58();
   addLog(`🔍 Fetching seed for ${playerPubkey}`);
 
+  // 1) Fetch the committed server seed
   let seedArr: number[];
   try {
-    // `request` returns the parsed JSON body directly
     const { serverSeed } = await request<{ serverSeed: number[] }>(
       "/api/revealSeed",
       {
@@ -48,10 +45,10 @@ const handleReveal = async ({
     const msg = err.message || "Failed to fetch server seed";
     notify({ type: "error", message: "Seed fetch failed", description: msg });
     addLog(`❌ Seed fetch failed: ${msg}`);
-    return { success: false, error: msg };
+    throw new Error(msg);
   }
 
-  // Derive PDAs
+  // 2) Derive PDAs
   const [vaultPda] = await PublicKey.findProgramAddress(
     [Buffer.from("vault")],
     program.programId
@@ -65,27 +62,24 @@ const handleReveal = async ({
     program.programId
   );
 
+  // 3) Fire the reveal instruction
   try {
     addLog(`🎲 Revealing with seed [${seedArr.join(", ")}]`);
-    const txSig = await program.methods
-      .reveal(Uint8Array.from(seedArr))
-      .accounts({
-        vault: vaultPda,
-        vaultAccount: vaultAccountPda,
-        session: sessionPda,
-        player: wallet.publicKey,
-        systemProgram: SystemProgram.programId,
-      })
-      .rpc();
+const txSig: string = await program.methods
+.reveal(Uint8Array.from(seedArr))
+.accounts({ /* … */ })
+.rpc({
+  skipPreflight: true,
+  preflightCommitment: "processed",
+});
+
 
     addLog(`✅ Reveal tx: ${txSig}`);
-    return { success: true, txSig };
+    return { txSig };
   } catch (err: any) {
-    const raw = err.message || "Reveal tx failed";
+    const raw = err.message || "Reveal transaction failed";
     notify({ type: "error", message: "Reveal failed", description: raw });
     addLog(`❌ Reveal failed: ${raw}`);
-    return { success: false, error: raw };
+    throw new Error(raw);
   }
-};
-
-export default handleReveal;
+}
