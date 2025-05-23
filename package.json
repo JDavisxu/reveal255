@@ -24,7 +24,7 @@
     "@switchboard-xyz/solana.js": "^3.2.5",
     "@tailwindcss/typography": "^0.5.9",
     "bn.js": "^5.2.2",
-    "daisyui": "^1.24.3",
+    "daisyui": "^5.0.37",
     "date-fns": "^2.29.3",
     "framer-motion": "^12.9.2",
     "immer": "^9.0.12",
